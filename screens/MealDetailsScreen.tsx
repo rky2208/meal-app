@@ -1,32 +1,50 @@
 import { useRoute } from "@react-navigation/native";
-import {
-  View,
-  Text,
-  Image,
-  StyleSheet,
-  ScrollView,
-  Button,
-} from "react-native";
+import { View, Text, Image, StyleSheet, ScrollView } from "react-native";
 import { MEALS } from "@/data/dummy-data";
 import MealInfo from "@/components/MealInfo";
 import Subtitle from "@/components/Subtitle";
 import List from "@/components/List";
-import { useLayoutEffect } from "react";
+import { useContext, useLayoutEffect } from "react";
 import IconButton from "@/components/IconButton";
-
+import { FavoritesContext } from "@/store/context/favorites-context";
+import { useDispatch, useSelector } from "react-redux";
+import { addFav, removeFav } from "@/store/redux/fav";
+import { store } from "@/store/redux/store";
 const MealDetailsScreen = ({ navigation }) => {
   const route = useRoute();
+  // const favContext = useContext(FavoritesContext);
+  const favMealIds = useSelector((state) => state.favMeals.ids);
+  const dispatch = useDispatch();
   const mealId = route.params?.mealId;
   const selectedMeal = MEALS.find((meal) => meal.id === mealId);
-  const handlePress = () => {};
+
+  // const isSelectedMealFav = favContext.ids.includes(mealId);
+  const isSelectedMealFav = favMealIds.includes(mealId);
+
+  console.log(isSelectedMealFav);
+  const handleToggleFavPress = () => {
+    if (isSelectedMealFav) {
+      // favContext.removeFavHandler(mealId);
+      dispatch(removeFav({ id: mealId }));
+    } else {
+      // favContext.addFavHandler(mealId);
+      dispatch(addFav({ id: mealId }));
+    }
+  };
 
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => {
-        return <IconButton icon="star" onPress={handlePress} color="white" />;
+        return (
+          <IconButton
+            icon={isSelectedMealFav ? "star" : "star-outline"}
+            handlePress={handleToggleFavPress}
+            color="white"
+          />
+        );
       },
     });
-  }, [navigation]);
+  }, [navigation, isSelectedMealFav]);
   return (
     <ScrollView style={styles.root}>
       <Image source={{ uri: selectedMeal?.imageUrl }} style={styles.img} />
